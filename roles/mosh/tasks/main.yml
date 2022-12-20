@@ -1,0 +1,16 @@
+---
+- tags: mosh
+  block:
+    - name: Install mosh 
+      apt: 
+        name: mosh
+        state: present
+      become: true
+
+    - name: Allow iptables UDP port 60001-60005 (SSH).
+      ufw:
+        rule: limit 
+        port: 60000:60020
+        proto: udp
+        comment: Mosh
+      become: true

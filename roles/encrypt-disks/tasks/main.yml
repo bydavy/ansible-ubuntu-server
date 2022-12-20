@@ -1,0 +1,69 @@
+- tags: encrypt-disks
+  become: true
+  block:
+    - name: "Install packages"
+      apt:
+        name: "parted"
+        state: present
+
+    - name: Create Primary Partitions
+      parted:
+        device: "{{ item.device }}"
+        label: gpt
+        number: 1
+        state: present
+      loop: "{{ disks }}"
+
+    - name: Check LUKS Container is inactive
+      command: sh -c "cryptsetup status crypt-{{ item.name }} | grep active"
+      register: crypts
+      changed_when: false
+      loop: "{{ disks }}"
+
+    - name: (Create and) Open LUKS Container if inactive
+      luks_device:
+        device: "{{ item.item.device }}"
+        name: "crypt-{{ item.item.name }}"
+        state: opened
+        passphrase: "{{ luks_password }}"
+      with_items:
+        - "{{ crypts.results }}"
+      when: 
+        - item.stdout.find('inactive') != -1
+
+    - name: Create crypttab entry
+      crypttab:
+        backing_device: "{{ item.device }}"
+        name: "crypt-{{ item.name }}" 
+        state: present
+        opts: luks,initramfs
+      loop: "{{ disks }}"
+      notify: Update initramfs 
+
+    - name: Check Volume Groups
+      lvg:
+        vg: "{{ item.vg }}"
+        pvs: "/dev/mapper/crypt-{{ item.name }}"
+      loop: "{{ disks }}"
+
+    - name: Check Volumes
+      lvol:
+        vg: "{{ item.vg }}"
+        lv: "{{ item.name }}" 
+        size: 100%FREE
+        shrink: false
+      loop: "{{ disks }}"
+
+    - name: Check Filesystems
+      filesystem:
+        fstype: ext4
+        dev: "/dev/mapper/{{ item.vg }}-{{ item.name }}"
+      loop: "{{ disks }}"
+
+    - name: Check Mounts
+      mount:
+        name: "{{ item.mount }}"
+        src: "/dev/mapper/{{ item.vg }}-{{ item.name }}"
+        fstype: ext4
+        state: mounted
+      loop: "{{ disks }}"

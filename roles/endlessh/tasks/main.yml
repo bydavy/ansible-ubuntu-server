@@ -1,0 +1,21 @@
+- tags: endlessh
+  block:
+    - name: Create {{ container_name }} container
+      docker_container:
+        name: '{{ container_name }}'
+        image: lscr.io/linuxserver/endlessh:latest
+        state: started
+        restart_policy: always
+        cleanup: true
+        env:
+          TZ: '{{ tz }}'
+        ports:
+        - '22:22/tcp'
+
+    - name: Allow SSH
+      ufw:
+        rule: limit
+        port: ssh
+        proto: tcp
+      become: true
+      when: "'ufw' in role_names"

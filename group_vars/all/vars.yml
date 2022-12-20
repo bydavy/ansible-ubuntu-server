@@ -1,0 +1,6 @@
+interface: 'eno1'
+ip: '192.168.1.100/24'
+gateway: '192.168.1.1'
+hostname: ubuntu
+ssh_port: '22' # Good idea to more to another port
+luks_password: "password" # Disk encryption

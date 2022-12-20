@@ -1,0 +1,12 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    {{ interface }}:
+      addresses:
+        - {{ ip }}
+      nameservers:
+        addresses: [ {{ dns }} ]
+      routes:
+        - to: default
+          via: {{ gateway }}

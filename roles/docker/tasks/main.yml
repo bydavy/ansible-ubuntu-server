@@ -1,0 +1,53 @@
+- tags: docker
+  block:
+    - name: update the package list
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      become: true
+
+    - name: Install docker.io
+      apt:
+        name: "{{ item }}"
+        state: present
+      become: true
+      with_items:
+        - docker.io
+        - python3-docker
+
+    - name: Enable docker systemd service
+      service:
+        name: 'docker'
+        state: 'started'
+        enabled: 'yes'
+
+    - name: Ensure group "docker" exists with correct gid
+      ansible.builtin.group:
+        name: docker
+        state: present
+
+    - name: Add users to docker group
+      ansible.builtin.user:
+        name: "{{ ansible_env.USER }}"
+        groups: "docker"
+        append: "yes"
+      become: true
+    
+    - name: Reset ssh connection 
+      meta: reset_connection
+
+    - name: Prune docker cron job
+      ansible.builtin.cron:
+        name: "Prune docker"
+        special_time: "weekly"
+        job: "docker system prune --volumes -af > /tmp/docker_prune.log 2>&1"
+
+    - name: Create docker data dir
+      file:
+        path: '{{ docker_data}}'
+        state: directory
+        mode: '700'
+        owner: '{{ ansible_user }}'
+        group: '{{ ansible_user }}' 
+      become: true
+      when: docker_data is defined

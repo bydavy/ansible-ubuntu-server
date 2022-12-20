@@ -1,0 +1,22 @@
+- hosts:
+  - all
+  roles:
+  - apt-update # Update packages
+  - dropbear-initramfs # ssh to unlock LUKS rootfs
+  - network
+  - ssh-hardening 
+  - ssh-public-keys
+  - ufw
+  - fail2ban # Security
+  - mosh
+  # (Optional extra drives)
+  # - role: encrypt-disks # Extra LUKS storage 
+  #   vars: 
+  #     disks:
+  #       - device: /dev/sda
+  #         mount: /media/ssd
+  #         name: ssd
+  #         vg: vgssd
+  # (Optional endlessh)
+  #- docker
+  #- endlessh

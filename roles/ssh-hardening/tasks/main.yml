@@ -1,0 +1,38 @@
+- tags: ssh-hardening
+  notify: 
+   - Restart ssh
+  become: true
+  block:
+    - name: Disable empty password login
+      lineinfile: 
+          dest: /etc/ssh/sshd_config
+          regexp: "^#?PermitEmptyPasswords"
+          line: "PermitEmptyPasswords no"
+
+    - name: Ban root SSH access
+      lineinfile: 
+        dest: /etc/ssh/sshd_config
+        regexp: "^#?PermitRootLogin"
+        line: "PermitRootLogin no"
+        state: present
+      when: ansible_user != 'root' 
+
+    - name: Allow public key login
+      lineinfile: 
+        dest: /etc/ssh/sshd_config
+        regexp: "^#?PubkeyAuthentication"
+        line: "PubkeyAuthentication yes"
+      become: true
+
+    - name: Disable password login
+      lineinfile: 
+        dest: /etc/ssh/sshd_config
+        regexp: "^#?PasswordAuthentication"
+        line: "PasswordAuthentication no"
+
+    - name: Change port
+      lineinfile: 
+        dest: /etc/ssh/sshd_config
+        regexp: "^#?Port"
+        line: "Port {{ ssh_port }}"
+      when: ssh_port is defined

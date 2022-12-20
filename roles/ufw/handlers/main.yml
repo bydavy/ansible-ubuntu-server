@@ -1,0 +1,10 @@
+- name: Enable ufw
+  ansible.builtin.service:
+    enabled: true
+    state: started
+    policy: deny
+
+- name: Reload ufw 
+  ufw:
+    state: reloaded 
+  become: true

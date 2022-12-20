@@ -1,0 +1,12 @@
+---
+- tags: network
+  block:
+    - name: Configure network
+      ansible.builtin.template:
+        src: 00-installer-config.yaml.j2
+        dest: /etc/netplan/00-installer-config.yaml
+        owner: root
+        group: root
+        mode: '0644'
+      become: true
+      notify: Restart network

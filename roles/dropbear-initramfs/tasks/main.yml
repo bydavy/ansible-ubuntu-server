@@ -1,0 +1,49 @@
+- tags: dropbear-initramfs
+  become: true
+  notify: Update initramfs 
+  block:
+    - name: update the package list
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      changed_when: false
+
+    - name: Install dropbear-initramfs 
+      apt:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - dropbear
+        - busybox
+        - dropbear-initramfs
+
+    - name: Configure dropbear
+      lineinfile: 
+        path: "/etc/dropbear/initramfs/dropbear.conf"
+        regexp: '^#?DROPBEAR_OPTIONS='
+        line: 'DROPBEAR_OPTIONS="-s -j -k -p {{ ssh_port }}"'
+        backup: yes
+
+    - name: Enable busybox
+      lineinfile: 
+        path: /etc/initramfs-tools/initramfs.conf
+        regexp: '^BUSYBOX='
+        line: 'BUSYBOX=y'
+        backup: yes
+
+    - name: Static ip for Dropbear
+      lineinfile: 
+        path: /etc/initramfs-tools/initramfs.conf
+        regexp: '^IP='
+        line: "IP={{ ip | ansible.utils.ipaddr('address') }}::{{ gateway }}:{{ ip | ansible.utils.ipaddr('netmask') }}:{{ hostname }}"
+        backup: yes
+
+    - name: Enable SSH Key Login
+      authorized_key:
+        user: 'root'
+        key: "{{ lookup('file', item) }}"
+        path: "/etc/dropbear/initramfs/authorized_keys"
+      with_fileglob:
+      - public_keys/*.pub
+
+      # Once booted unlock with `$ cryptroot-unlock`

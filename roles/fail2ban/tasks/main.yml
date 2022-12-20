@@ -1,0 +1,61 @@
+- tags: fail2ban 
+  block:
+    - name: update the package list
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      become: true
+
+    - name: Install fail2ban
+      apt:
+        name: fail2ban
+        state: present
+      become: true
+      notify: Restart fail2ban 
+
+    - name: Creating a file with content
+      copy:
+        dest: "/etc/fail2ban/fail2ban.local"
+        content: "[DEFAULT]\ndbpurgeage = 612000 ; a little longer than 7 days"
+        owner: root
+        group: root
+        mode: '0644'
+      become: true
+      notify: Restart fail2ban 
+
+    - name: Configure fail2ban recidive
+      ansible.builtin.template:
+        src: recidive.conf.j2
+        dest: /etc/fail2ban/jail.d/recidive.conf
+        owner: root
+        group: root
+        mode: '0644'
+      become: true
+      notify: Restart fail2ban 
+
+    - name: Configure fail2ban
+      copy: 
+        src: /etc/fail2ban/jail.conf
+        dest: /etc/fail2ban/jail.local
+        remote_src: yes
+        force: no
+      become: true
+      notify: Restart fail2ban 
+
+    - name: Set ufw
+      lineinfile: 
+        dest: /etc/fail2ban/jail.local
+        regexp: "^banaction =(.*)"
+        line: "banaction = ufw"
+        firstmatch: true
+      become: true
+      notify: Restart fail2ban 
+
+    - name: Set ufw
+      lineinfile: 
+        dest: /etc/fail2ban/jail.local
+        regexp: "^banaction_allports =(.*)"
+        line: "banaction_allports = ufw"
+        firstmatch: true
+      become: true
+      notify: Restart fail2ban 

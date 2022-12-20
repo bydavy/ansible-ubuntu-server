@@ -1,0 +1,9 @@
+- tags: ssh-public-keys
+  block:
+    - name: Enable SSH Key Login for "{{ ssh_remote_user }}" user
+      become: true
+      authorized_key:
+        user: '{{ ssh_remote_user }}'
+        key: "{{ lookup('file', item) }}"
+      with_fileglob:
+      - public_keys/*.pub
