@@ -8,6 +8,7 @@ This playbook is a turnkey configuration for you ubuntu server with sain securit
 
 ## Steps
 1. Install Ubuntu Server: select "Guided - user entire disk and set up encrypted LVM"
+![Ubunter Server Installation](docs/ubuntu_guided_use_encrypted_lvm.png)
 2. Update variables in `group_vars/vars.yml`
 3. Update `ansible_host`, `ansible_user`, `ansible_port` in `hosts`
 4. (Optional) Add your ssh public key to `public_keys/` must end with `.pub`
