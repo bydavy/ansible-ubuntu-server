@@ -5,7 +5,6 @@
   - dropbear-initramfs # ssh to unlock LUKS rootfs
   - network
   - ssh-hardening 
-  - ssh-public-keys
   - ufw
   - fail2ban # Security
   - mosh
