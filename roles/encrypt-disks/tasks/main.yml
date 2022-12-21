@@ -26,6 +26,7 @@
         name: "crypt-{{ item.item.name }}"
         state: opened
         passphrase: "{{ luks_password }}"
+      no_log: true
       with_items:
         - "{{ crypts.results }}"
       when: 
