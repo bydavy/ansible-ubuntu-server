@@ -1,39 +1,32 @@
 - tags: ufw
+  become: true
+  notify: Reload ufw
   block:
     - name: Install ufw
       apt:
         name: ufw
         state: present
-      become: true
-      notify: Enable ufw
 
     - name: Allow SSH
       ufw:
         rule: limit
         port: "{{ ssh_port | default('ssh') }}"
         proto: tcp
-      become: true
 
     - name: Deny incoming by default
       ufw:
         policy: deny
         direction: incoming
-      become: true
-      notify: Reload ufw
 
     - name: Allow outgoing by default
       ufw:
         policy: allow
         direction: outgoing
-      become: true
-      notify: Reload ufw
 
     - name: Allow outgoing by default
       ufw:
         policy: allow
         direction: outgoing
-      become: true
-      notify: Reload ufw
     
     - when: enable_forwarding is defined and enable_forwarding|bool == true
       block: 
@@ -43,7 +36,6 @@
             regexp: '^#?DEFAULT_FORWARD_POLICY.*'
             replace: 'DEFAULT_FORWARD_POLICY="ACCEPT"'
             backup: yes
-          become: true
       
         - name: Enable forwarding
           ansible.builtin.replace:
@@ -51,10 +43,14 @@
             regexp: '^#?net.ipv4.ip_forward.*'
             replace: 'net.ipv4.ip_forward=1'
             backup: yes
-          become: true
 
     - name: Enable ufw
       ufw:
         state: enabled
         policy: deny
-      become: true
+
+    - name: Enable ufw in systemd
+      ansible.builtin.service:
+        enabled: true
+        state: started
+        policy: deny

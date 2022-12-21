@@ -1,34 +1,30 @@
 ---
 - tags: apt-update
+  become: true
   block:
     - name: Install needrestart
       apt:
         name: needrestart
         state: present
-      become: true
 
     - name: Update the package list
       apt:
         update_cache: yes
         cache_valid_time: 3600
-      become: true
       changed_when: false
 
     - name: Upgrade a server with apt
       apt:
         upgrade: dist
       register: upgrade
-      become: true
 
     - name: Remove useless packages from the cache
       apt:
         autoclean: yes
-      become: true
 
     - name: Remove dependencies that are no longer required
       apt:
         autoremove: yes
-      become: true
 
     - name: Run needrestart
       command: needrestart -r a

@@ -1,18 +1,17 @@
 - tags: fail2ban 
+  become: true
+  notify: Restart fail2ban 
   block:
     - name: update the package list
       apt:
         update_cache: yes
         cache_valid_time: 3600
-      become: true
       changed_when: false
 
     - name: Install fail2ban
       apt:
         name: fail2ban
         state: present
-      become: true
-      notify: Restart fail2ban 
 
     - name: Creating a file with content
       copy:
@@ -21,8 +20,6 @@
         owner: root
         group: root
         mode: '0644'
-      become: true
-      notify: Restart fail2ban 
 
     - name: Configure fail2ban recidive
       ansible.builtin.template:
@@ -31,8 +28,6 @@
         owner: root
         group: root
         mode: '0644'
-      become: true
-      notify: Restart fail2ban 
 
     - name: Configure fail2ban
       copy: 
@@ -40,8 +35,6 @@
         dest: /etc/fail2ban/jail.local
         remote_src: yes
         force: no
-      become: true
-      notify: Restart fail2ban 
 
     - name: Set ufw
       lineinfile: 
@@ -49,8 +42,6 @@
         regexp: "^banaction =(.*)"
         line: "banaction = ufw"
         firstmatch: true
-      become: true
-      notify: Restart fail2ban 
 
     - name: Set ufw
       lineinfile: 
@@ -58,5 +49,3 @@
         regexp: "^banaction_allports =(.*)"
         line: "banaction_allports = ufw"
         firstmatch: true
-      become: true
-      notify: Restart fail2ban 
